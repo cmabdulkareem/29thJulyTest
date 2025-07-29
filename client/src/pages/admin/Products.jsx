@@ -1,7 +1,7 @@
-import React, { useEffect, useState} from 'react'
-import {Link} from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
-import {toast, ToastContainer} from 'react-toastify'
+import { toast, ToastContainer } from 'react-toastify'
 
 const BACKEND_URL = "http://localhost:3000"
 
@@ -9,27 +9,35 @@ function Products() {
 
   const [products, setProducts] = useState([])
 
-  useEffect(()=>{
-    axios.get(`${BACKEND_URL}/products`, {withCredentials: true})
-      .then((res)=>{
+  useEffect(() => {
+    axios.get(`${BACKEND_URL}/products`, { withCredentials: true })
+      .then((res) => {
         setProducts(res.data)
       })
-      .catch((err)=>{
+      .catch((err) => {
         toast.error("Unable to fetch products")
       })
   }, [])
 
 
-  function handleEdit(id){
+  function handleEdit(id) {
     console.log(id)
     alert(`Edit clicked for Product ID: ${id}`);
   }
 
-  function handleDelete(id){
-    console.log(id)
-    alert(`Delete clicked for Product ID: ${id}`);
+  function handleDelete(id) {
+    let confirm = window.confirm("Are you sure you want to delete this product?")
+    if (confirm){
+      axios.delete(`${BACKEND_URL}/deleteproduct/${id}`, { withCredentials: true })
+        .then((res) => {
+            toast.success("Product deleted successfully")
+            setProducts(prev => prev.filter(p => p._id !== id))
+        })
+        .catch((err) => {
+          toast.error("Unable to delete product")
+        })
+    }
   }
-
 
   return (
     <div className="container">
@@ -49,16 +57,16 @@ function Products() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product, index)=>(
+              {products.map((product, index) => (
                 <tr key={index}>
-                  <th scope="row">{index+1}</th>
-                  <td><img src={`${BACKEND_URL}/images/products/${product._id}.jpg`} alt={product.itemName} width="50" height="50"/></td>
+                  <th scope="row">{index + 1}</th>
+                  <td><img src={`${BACKEND_URL}/images/products/${product._id}.jpg`} alt={product.itemName} width="50" height="50" /></td>
                   <td>{product.itemName}</td>
                   <td>{product.itemDesc}</td>
                   <td>{product.itemPrice}</td>
                   <td>
-                    <button  className="btn btn-primary me-2" onClick={()=>handleEdit(index)}>Edit</button>
-                    <button  className="btn btn-danger" onClick={()=>handleDelete(index)}>Delete</button>
+                    <button className="btn btn-warning me-2" onClick={() => handleEdit(product._id)}>Edit</button>
+                    <button className="btn btn-danger" onClick={() => handleDelete(product._id)}>Delete</button>
                   </td>
                 </tr>
               ))}

@@ -9,6 +9,7 @@ function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     axios
@@ -28,6 +29,10 @@ function AuthProvider({ children }) {
 
   function updateUser(userData) {
     setUser(userData);
+  }
+
+  function updateCartCount(count) {
+    setCartCount(count);
   }
 
   function login(role) {
@@ -53,6 +58,8 @@ function AuthProvider({ children }) {
         login,
         logout,
         updateUser,
+        updateCartCount,
+        cartCount
       }}
     >
       {children}
