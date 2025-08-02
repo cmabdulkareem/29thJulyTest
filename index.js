@@ -154,7 +154,7 @@ app.post('/addproduct', verifyToken, async(req, res)=>{
     }
 })
 
-app.get('/products', verifyToken, async(req, res)=>{
+app.get('/products', async(req, res)=>{
     try {
         let products = await Product.find({})
         return res.status(200).json(products)

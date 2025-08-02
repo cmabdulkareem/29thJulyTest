@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Banner from '../components/Banner'
 import Card from '../components/Card'
 import axios from 'axios'
+import {toast, ToastContainer} from 'react-toastify'
 
 const BACKEND_URL = "http://localhost:3000"
 
@@ -9,7 +10,7 @@ function HomePage() {
   const [products, setProducts] = useState([])
 
   useEffect(()=>{
-    axios.get(`${BACKEND_URL}/products`, {withCredentials: true})
+    axios.get(`${BACKEND_URL}/products`)
       .then((res)=>{
         setProducts(res.data)
       })
@@ -20,6 +21,7 @@ function HomePage() {
 
   return (
     <div>
+      <ToastContainer />
       <Banner />
       <div className="container-lg mt-5">
         <div className="row">
