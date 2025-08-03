@@ -20,14 +20,27 @@ function Products() {
   }, [])
 
 
-  function handleEdit(id){
-    console.log(id)
-    alert(`Edit clicked for Product ID: ${id}`);
-  }
+function handleEdit(x){
+  alert(`you are deleting item no ${x+1}`)
+}
+
+
 
   function handleDelete(id){
-    console.log(id)
-    alert(`Delete clicked for Product ID: ${id}`);
+    let confirm = window.confirm("Are you sure to delete this item ?")
+
+    if(confirm){
+      axios.delete(`${BACKEND_URL}/deleteproduct/${id}`, {withCredentials: true})
+        .then((res)=>{
+          toast.success(res.data)
+          setProducts(products.filter((product)=>product._id !== id))
+          // we are filtering the products array to remove the deleted product
+          // so that the table is updated
+        })
+        .catch((err)=>{
+          console.error(err)
+        })
+    }
   }
 
 
@@ -57,8 +70,8 @@ function Products() {
                   <td>{product.itemDesc}</td>
                   <td>{product.itemPrice}</td>
                   <td>
-                    <button  className="btn btn-primary me-2" onClick={()=>handleEdit(index)}>Edit</button>
-                    <button  className="btn btn-danger" onClick={()=>handleDelete(index)}>Delete</button>
+                    <button  className="btn btn-primary me-2" onClick={()=>handleEdit(product._id)}>Edit</button>
+                    <button  className="btn btn-danger" onClick={()=>handleDelete(product._id)}>Delete</button>
                   </td>
                 </tr>
               ))}

@@ -35,7 +35,6 @@ const userSchema = new mongoose.Schema({
     password: String,
     role: {type: String, default: 'user'}
 })
-
 const User = mongoose.model('User', userSchema)
 
 const productSchema = new mongoose.Schema({
@@ -43,8 +42,14 @@ const productSchema = new mongoose.Schema({
     itemDesc: String,
     itemPrice: String,
 })
-
 const Product = mongoose.model('Product', productSchema)
+
+const CartSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true },
+  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
+});
+
+const Cart = mongoose.model("Cart", CartSchema)
 
 
 app.post('/register', async (req, res)=>{
@@ -117,7 +122,7 @@ function generateOTP(){
     return Math.floor(1000 + Math.random() * 9000)
 }
 
-app.post('/forgotpw', async (req, res) => {
+app.post('/forgotpw', verifyToken, async (req, res) => {
     const { email } = req.body;
     try {
         if(!email){
@@ -134,7 +139,9 @@ app.post('/forgotpw', async (req, res) => {
     }
 })
 
-app.post('/addproduct', async(req, res)=>{
+
+
+app.post('/addproduct', verifyToken, async(req, res)=>{
     const {name, description, price} = req.body
     const {image} = req.files
     try {
@@ -157,5 +164,40 @@ app.get('/products', async(req, res)=>{
         return res.status(500).json("Internal server error")
     }
 })
+
+app.delete('/deleteproduct/:id', verifyToken, async(req, res)=>{
+    const {id} = req.params
+    console.log(id)
+    try {
+        const deletedItem = await Product.findByIdAndDelete(id)
+        res.status(200).json("item deleted succesfully")
+    } catch (error) {
+        res.status(500).json("internal server error")
+    }
+})
+
+
+
+
+
+app.post('/addtocart/:id', verifyToken, async (req, res) => {
+    const productId = req.params.id;
+    const userId = req.user.id;
+
+    const updateOperation = {
+        $addToSet: { products: productId } // Prevents duplicates
+    };
+
+    try {
+        const updatedCart = await Cart.findOneAndUpdate(
+            { user: userId },
+            updateOperation,
+            { upsert: true, new: true }
+        );
+        res.status(200).json(updatedCart);
+    } catch (err) {
+        res.status(500).json({ error: "Error adding product to cart" });
+    }
+});
 
 app.listen(3000, () => console.log('Server is running on port 3000'))
