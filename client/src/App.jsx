@@ -14,6 +14,7 @@ import Dashboard from './pages/admin/Dashboard'
 import AddProducts from './pages/admin/AddProducts'
 import Orders from './pages/admin/Orders'
 import Products from './pages/admin/Products'
+import EditProducts from './pages/admin/EditProducts'
 
 // following are authentication related pages:
 import Login from './pages/auth/Login'
@@ -35,6 +36,7 @@ function App() {
         <Route path='addproduct' element={<AdminRoutes><AddProducts /></AdminRoutes>} />
         <Route path='orders' element={<AdminRoutes><Orders /></AdminRoutes>} />
         <Route path='products' element={<AdminRoutes><Products /></AdminRoutes>} />
+        <Route path='editproduct/:id' element={<AdminRoutes><EditProducts /></AdminRoutes>} />
       </Route>
 
       <Route path='/login' element={<Login />} />

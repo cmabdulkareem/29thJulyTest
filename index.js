@@ -104,14 +104,21 @@ function verifyToken(req, res, next) {
   }
 }
 
-app.get('/user', verifyToken, async(req, res)=>{
+app.get('/user', verifyToken, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id)
-        return res.status(200).json({user, role: user.role})
+        const user = await User.findById(req.user.id);
+        const cart = await Cart.findOne({ user: req.user.id });
+        const cartCount = cart?.products?.length || 0;
+        return res.status(200).json({
+            user,
+            role: user.role,
+            cartCount
+        });
     } catch (error) {
-        return res.status(500).json('Internal server error')
+        return res.status(500).json('Internal server error');
     }
-})
+});
+
 
 app.get('/logout', (req, res)=>{
     res.clearCookie('token', { httpOnly: true, secure: false, sameSite: 'lax' })
@@ -192,5 +199,72 @@ app.post('/addtocart/:id', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Error adding product to cart" });
     }
 });
+
+app.get('/cart', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const cart = await Cart.findOne({ user: userId }).populate('products');
+
+    if (!cart) {
+      return res.status(200).json({ products: [], message: 'Cart is empty' });
+    }
+
+    return res.status(200).json({ products: cart.products });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/getproduct/:id', async(req, res)=>{
+    const {id} = req.params
+    try {
+        let product = await Product.findById(id)
+        return res.status(200).json(product)
+    } catch (error) {
+        return res.status(500).json("Internal server error")
+    }
+})
+
+app.put('/editproduct/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { name, description, price } = req.body;
+    const image = req.files?.image;
+
+    try {
+        if (!name || !description || !price) {
+            return res.status(400).json("All fields are required");
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(
+            id,
+            {
+                itemName: name,
+                itemDesc: description,
+                itemPrice: price
+            },
+            { new: true }
+        );
+
+        if (!updatedProduct) {
+            return res.status(404).json("Product not found");
+        }
+
+        if (image) {
+            const imagePath = path.join(__dirname, 'public', 'images', 'products', `${id}.jpg`);
+            image.mv(imagePath, (err) => {
+                if (err) {
+                    console.error('Image upload error:', err);
+                    return res.status(500).json("Image upload failed");
+                }
+            });
+        }
+        return res.status(200).json("Product updated successfully");
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json("Internal server error");
+    }
+});
+
 
 app.listen(3000, () => console.log('Server is running on port 3000'))

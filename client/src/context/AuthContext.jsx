@@ -20,6 +20,7 @@ function AuthProvider({ children }) {
         setIsLoggedIn(true);
         setIsAdmin(role === "admin");
         setLoading(false);
+        setCartCount(res.data.cartCount);
       })
       .catch((err) => {
         console.error("Auth check failed:", err);

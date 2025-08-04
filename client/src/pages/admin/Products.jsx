@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify'
 
@@ -7,6 +7,7 @@ const BACKEND_URL = "http://localhost:3000"
 
 function Products() {
 
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
 
   useEffect(() => {
@@ -22,7 +23,7 @@ function Products() {
 
   function handleEdit(id) {
     console.log(id)
-    alert(`Edit clicked for Product ID: ${id}`);
+    navigate(`/admin/editproduct/${id}`)
   }
 
   function handleDelete(id) {
