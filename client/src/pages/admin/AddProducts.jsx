@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import axios from 'axios'
 import {toast, ToastContainer} from 'react-toastify'
 
-const BACKEND_URL = "http://localhost:3000"
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 function AddProducts() {
 
@@ -12,6 +12,12 @@ function AddProducts() {
   const [itemImage, setItemImage] = useState(null)
   const [imagePreview, setImagePreview] = useState('https://www.svgrepo.com/show/508699/landscape-placeholder.svg')
   const [formData, setFormData] = useState({})
+
+  const [isColorEnabled, setIsColorEnabled] = useState(false)
+
+  function enableChangeColor() {
+    setIsColorEnabled(!isColorEnabled)
+  }
 
   const handleFormSubmit = (e) => {
     e.preventDefault()
@@ -69,6 +75,13 @@ function AddProducts() {
                 onChange={(e) => setItemPrice(e.target.value)}
                 value={itemPrice}
               /><br/>
+
+              {isColorEnabled && <select>
+                <option value="red">Red</option>
+                <option value="red">Blue</option>
+                <option value="red">Green</option>
+                </select>}<br/>
+
               <input
                 type="file"
                 className='form-control'
@@ -85,6 +98,7 @@ function AddProducts() {
             <div className='mt-4'>
               <button type="reset" className='btn btn-danger me-2'>Reset</button>
               <button type="submit" className='btn btn-primary'>Submit</button>
+              <input type="button" value="Change Color" onClick={enableChangeColor} />
             </div>
           </form>
         </div>

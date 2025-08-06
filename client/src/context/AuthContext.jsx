@@ -2,7 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
 const AuthContext = createContext();
-const BACKEND_URL = "http://localhost:3000"; // You might want to move this to an .env file
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

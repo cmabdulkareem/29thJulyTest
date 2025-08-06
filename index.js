@@ -45,11 +45,19 @@ const productSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', productSchema)
 
 const CartSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true },
-  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
-});
+    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User', },
+    products: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}]
+})
 
-const Cart = mongoose.model("Cart", CartSchema)
+const Cart = mongoose.model('Cart', CartSchema)
+
+
+// const CartSchema = new mongoose.Schema({
+//   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true },
+//   products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
+// });
+
+// const Cart = mongoose.model("Cart", CartSchema)
 
 
 app.post('/register', async (req, res)=>{
@@ -156,7 +164,7 @@ app.post('/addproduct', verifyToken, async(req, res)=>{
     }
 })
 
-app.get('/products', async(req, res)=>{
+app.get('/products', verifyToken, async(req, res)=>{
     try {
         let products = await Product.find({})
         return res.status(200).json(products)
@@ -165,9 +173,49 @@ app.get('/products', async(req, res)=>{
     }
 })
 
+app.get('/getallproducts', verifyToken, async(req, res)=>{
+    try {
+        const products = await Product.find({})
+        res.status(200).json(products)
+    } catch (error) {
+        res.status(500).json("Internal server error")
+    }
+})
+
+
+app.get('/getproduct/:id', async(req, res)=>{
+    const {id} = req.params
+
+    try{
+        let product = await Product.findById(id)
+        return res.status(200).json(product)
+    } catch (error) {
+        return res.status(500).json("Internal server error")
+    }
+})
+
+app.put('/updateproduct', verifyToken, async(req, res)=>{
+    const {name, description, price, id} = req.body
+    const {image} = req.files
+    
+    try {
+        if(!name || !description || !price || !image){
+            res.status(400).json("all fields are required")
+        }
+        let updatedProduct = await Product.findByIdAndUpdate(id, {
+            itemName: name, 
+            itemDesc: description, 
+            itemPrice: price}, {new: true})
+        image.mv(path.join(__dirname, 'public', `images`, `products`, `${updatedProduct._id}.jpg`))
+        return res.status(200).json("Product updated successfully")
+    } catch (error) {
+        res.status(500).json("Internal server error")
+    }
+})
+
+
 app.delete('/deleteproduct/:id', verifyToken, async(req, res)=>{
     const {id} = req.params
-    console.log(id)
     try {
         const deletedItem = await Product.findByIdAndDelete(id)
         res.status(200).json("item deleted succesfully")
@@ -177,27 +225,56 @@ app.delete('/deleteproduct/:id', verifyToken, async(req, res)=>{
 })
 
 
-
-
-
-app.post('/addtocart/:id', verifyToken, async (req, res) => {
-    const productId = req.params.id;
-    const userId = req.user.id;
-
+app.post('/addtocart/:productId', verifyToken, async(req, res)=>{
+    const {productId} = req.params
+    console.log()
+    const userId = req.user.id
+    
     const updateOperation = {
-        $addToSet: { products: productId } // Prevents duplicates
-    };
+        $addToSet: {products: productId}
+        // will add items to the array and prevent if duplicates found
+    }
 
     try {
         const updatedCart = await Cart.findOneAndUpdate(
-            { user: userId },
-            updateOperation,
-            { upsert: true, new: true }
-        );
-        res.status(200).json(updatedCart);
-    } catch (err) {
-        res.status(500).json({ error: "Error adding product to cart" });
+            {user: userId}, 
+            updateOperation, 
+            {upsert: true, new: true})
+            // upsert : If no document matches the query, a new one will be created
+            // new: true (to make sure updated cart data is returned instead of the)
+        res.status(200).json(updatedCart)
+    } catch (error) {
+        res.status(500).json("internal server error")
     }
-});
+})
+
+
+
+
+
+
+
+
+// app.post('/addtocart/:id', verifyToken, async (req, res) => {
+//     const productId = req.params.id;
+//     const userId = req.user.id;
+
+//     const updateOperation = {
+//         $addToSet: { products: productId } // Prevents duplicates
+//     };
+
+//     try {
+//         const updatedCart = await Cart.findOneAndUpdate(
+//             { user: userId },
+//             updateOperation,
+//             { upsert: true, new: true }
+//         );
+//         res.status(200).json(updatedCart);
+//     } catch (err) {
+//         res.status(500).json({ error: "Error adding product to cart" });
+//     }
+// });
+
+
 
 app.listen(3000, () => console.log('Server is running on port 3000'))

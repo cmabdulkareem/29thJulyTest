@@ -1,21 +1,37 @@
-import React from 'react'
+import axios from 'axios'
+import React, { useState } from 'react'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
-function Card() {
+function Card(props) {
+    const [isAdded, setIsAdded] = useState(true)
+
+    function handleAddToCart(item){
+        axios.post(`${BACKEND_URL}/addtocart/${item}`,{}, {withCredentials: true})
+            .then((res)=>{
+                console.log(res.data)
+            })
+            .catch((err)=>{
+                console.error(err)
+            })
+    }
+
     return (
         <div className="card">
             <img
-                src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp"
+                src={`${BACKEND_URL}/images/products/${props.passedProduct._id}.jpg`}
                 className="card-img-top"
                 alt="Fissure in Sandstone"
             />
             <div className="card-body">
-                <h5 className="card-title">Card title</h5>
+                <h5 className="card-title">{props.passedProduct.itemName}</h5>
                 <p className="card-text">
-                    Some quick example text to build on the card title and make up the bulk of
-                    the card's content.
+                    {props.passedProduct.itemDesc}
                 </p>
-                <a href="#!" className="btn btn-primary" data-mdb-ripple-init="">
-                    Button
+                <p className="card-text">
+                    Price: {props.passedProduct.itemPrice}
+                </p>
+                <a href="#!" onClick={()=>handleAddToCart(props.passedProduct._id)} className={isAdded ? "btn btn-secondary" : "btn btn-primary"} data-mdb-ripple-init="">
+                    {isAdded ? "Added":"Add to cart"}
                 </a>
             </div>
         </div>

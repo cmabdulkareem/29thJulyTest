@@ -1,12 +1,13 @@
 import React, { useEffect, useState} from 'react'
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import axios from 'axios'
 import {toast, ToastContainer} from 'react-toastify'
 
-const BACKEND_URL = "http://localhost:3000"
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 function Products() {
 
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
 
   useEffect(()=>{
@@ -21,7 +22,7 @@ function Products() {
 
 
 function handleEdit(x){
-  alert(`you are deleting item no ${x+1}`)
+  navigate(`/admin/editproduct/${x}`)
 }
 
 

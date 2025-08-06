@@ -19,6 +19,8 @@ import Products from './pages/admin/Products'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import ForgotPw from './pages/auth/ForgotPw'
+import EditProduct from './pages/admin/EditProduct'
+import EditProductPage from './pages/admin/EditProductPage'
 
 function App() {
   return (
@@ -35,6 +37,7 @@ function App() {
         <Route path='addproduct' element={<AdminRoutes><AddProducts /></AdminRoutes>} />
         <Route path='orders' element={<AdminRoutes><Orders /></AdminRoutes>} />
         <Route path='products' element={<AdminRoutes><Products /></AdminRoutes>} />
+        <Route path='editproduct/:id' element={<AdminRoutes><EditProduct /></AdminRoutes>} />
       </Route>
 
       <Route path='/login' element={<Login />} />
