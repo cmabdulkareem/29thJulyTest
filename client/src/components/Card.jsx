@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios'
 import {AuthContext} from '../context/AuthContext'
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 function Card(props) {
     const {updateCartCount} = useContext(AuthContext);

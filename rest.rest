@@ -1,0 +1,9 @@
+POST http://localhost:3000/razorpay
+Content-Type: application/json
+
+{
+    "amount": 100,
+    "currency": "INR",
+    "receipt": "receipt#1",
+    "payment_capture": 1
+}

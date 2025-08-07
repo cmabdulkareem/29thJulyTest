@@ -7,6 +7,7 @@ import Home from './pages/HomePage'
 import Cart from './pages/Cart'
 import MyOrder from './pages/MyOrder'
 import ProductPage from './pages/ProductPage'
+import Checkout from './pages/Checkout'
 
 import AdminLayout from './layouts/AdminLayout'
 // following are admin related pages :
@@ -29,6 +30,7 @@ function App() {
         <Route path='cart' element={<UserRoutes><Cart /></UserRoutes>} />
         <Route path='myorder' element={<UserRoutes><MyOrder /></UserRoutes>} />
         <Route path='product/:id' element={<UserRoutes><ProductPage /></UserRoutes>} />
+        <Route path='checkout' element={<UserRoutes><Checkout /></UserRoutes>} />
       </Route>
 
       <Route path='/admin' element={<AdminLayout />}>

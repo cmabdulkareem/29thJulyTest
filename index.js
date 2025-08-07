@@ -6,7 +6,9 @@ import jwt from 'jsonwebtoken'
 import cookieParser from 'cookie-parser'
 import fileUpload from 'express-fileupload'
 import { fileURLToPath } from 'url';
-import path,{ dirname } from 'path';
+import path, { dirname } from 'path';
+import Razorpay from 'razorpay'
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,15 +27,15 @@ app.use(fileUpload())
 app.use(express.static('public'))
 
 mongoose.connect('mongodb://localhost:27017/987')
-    .then(()=>console.log('Connected to DB'))
-    .catch((err)=>console.log(err))
+    .then(() => console.log('Connected to DB'))
+    .catch((err) => console.log(err))
 
 
 const userSchema = new mongoose.Schema({
     fullName: String,
     email: String,
     password: String,
-    role: {type: String, default: 'user'}
+    role: { type: String, default: 'user' }
 })
 const User = mongoose.model('User', userSchema)
 
@@ -45,26 +47,26 @@ const productSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', productSchema)
 
 const CartSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true },
-  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true },
+    products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
 });
 
 const Cart = mongoose.model("Cart", CartSchema)
 
 
-app.post('/register', async (req, res)=>{
-    const {fullName, email, password} = req.body
+app.post('/register', async (req, res) => {
+    const { fullName, email, password } = req.body
 
     try {
-        if(!fullName || !email || !password){
+        if (!fullName || !email || !password) {
             return res.status(400).json('All fields are required')
         }
-        let userExisting = await User.findOne({email})
-        if(userExisting){
+        let userExisting = await User.findOne({ email })
+        if (userExisting) {
             return res.status(400).json('User already exists')
         }
         const hashedPassword = await bcrypt.hash(password, 10)
-        const user = await User.create({fullName, email, password: hashedPassword})
+        const user = await User.create({ fullName, email, password: hashedPassword })
         return res.status(201).json("User created successfully")
     } catch (error) {
         return res.status(500).json("internal server error")
@@ -73,35 +75,35 @@ app.post('/register', async (req, res)=>{
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-  
+
     try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(401).json('User not found');
-      }
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json('Invalid password');
-      }
-      let token = jwt.sign({ id: user._id }, 'secret');
-      res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'lax' });
-      return res.status(200).json({message:'Login successful', role: user.role, user});
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json('User not found');
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json('Invalid password');
+        }
+        let token = jwt.sign({ id: user._id }, 'secret');
+        res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'lax' });
+        return res.status(200).json({ message: 'Login successful', role: user.role, user });
     } catch (error) {
-      return res.status(500).json('Internal server error');
+        return res.status(500).json('Internal server error');
     }
 })
 
 function verifyToken(req, res, next) {
-  const {token} = req.cookies;
-  if (!token) return res.status(401).json({ message: 'Unauthorized' });
+    const { token } = req.cookies;
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
-  try {
-    const decoded = jwt.verify(token, 'secret'); // same secret used to sign
-    req.user = decoded; // Add user info to request
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
+    try {
+        const decoded = jwt.verify(token, 'secret'); // same secret used to sign
+        req.user = decoded; // Add user info to request
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
 }
 
 app.get('/user', verifyToken, async (req, res) => {
@@ -120,40 +122,40 @@ app.get('/user', verifyToken, async (req, res) => {
 });
 
 
-app.get('/logout', (req, res)=>{
+app.get('/logout', (req, res) => {
     res.clearCookie('token', { httpOnly: true, secure: false, sameSite: 'lax' })
     return res.status(200).json('Logout successful')
 })
 
-function generateOTP(){
+function generateOTP() {
     return Math.floor(1000 + Math.random() * 9000)
 }
 
 app.post('/forgotpw', verifyToken, async (req, res) => {
     const { email } = req.body;
     try {
-        if(!email){
+        if (!email) {
             return res.status(400).json('Email is required')
         }
-        const foundUser = await User.findOne({email})
-        if(!foundUser){
+        const foundUser = await User.findOne({ email })
+        if (!foundUser) {
             return res.status(404).json('User not found')
         }
         let otp = generateOTP()
-        res.status(200).json({otp})
+        res.status(200).json({ otp })
     } catch (error) {
         res.status(500).json('Internal server error')
     }
 })
 
-app.post('/addproduct', verifyToken, async(req, res)=>{
-    const {name, description, price} = req.body
-    const {image} = req.files
+app.post('/addproduct', verifyToken, async (req, res) => {
+    const { name, description, price } = req.body
+    const { image } = req.files
     try {
-        if(!name || !description || !price || !image){
+        if (!name || !description || !price || !image) {
             res.status(400).json("all fields are required")
         }
-        let product = await Product.create({itemName: name, itemDesc: description, itemPrice: price})
+        let product = await Product.create({ itemName: name, itemDesc: description, itemPrice: price })
         image.mv(path.join(__dirname, 'public', `images`, `products`, `${product._id}.jpg`))
         return res.status(201).json("Product added successfully")
     } catch (error) {
@@ -161,7 +163,7 @@ app.post('/addproduct', verifyToken, async(req, res)=>{
     }
 })
 
-app.get('/products', async(req, res)=>{
+app.get('/products', async (req, res) => {
     try {
         let products = await Product.find({})
         return res.status(200).json(products)
@@ -170,8 +172,8 @@ app.get('/products', async(req, res)=>{
     }
 })
 
-app.delete('/deleteproduct/:id', verifyToken, async(req, res)=>{
-    const {id} = req.params
+app.delete('/deleteproduct/:id', verifyToken, async (req, res) => {
+    const { id } = req.params
     try {
         await Product.findByIdAndDelete(id)
         return res.status(200).json("Product deleted successfully")
@@ -201,23 +203,23 @@ app.post('/addtocart/:id', verifyToken, async (req, res) => {
 });
 
 app.get('/cart', verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
+    try {
+        const userId = req.user.id;
 
-    const cart = await Cart.findOne({ user: userId }).populate('products');
+        const cart = await Cart.findOne({ user: userId }).populate('products');
 
-    if (!cart) {
-      return res.status(200).json({ products: [], message: 'Cart is empty' });
+        if (!cart) {
+            return res.status(200).json({ products: [], message: 'Cart is empty' });
+        }
+
+        return res.status(200).json({ products: cart.products });
+    } catch (error) {
+        return res.status(500).json({ error: 'Internal server error' });
     }
-
-    return res.status(200).json({ products: cart.products });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
 });
 
-app.get('/getproduct/:id', async(req, res)=>{
-    const {id} = req.params
+app.get('/getproduct/:id', async (req, res) => {
+    const { id } = req.params
     try {
         let product = await Product.findById(id)
         return res.status(200).json(product)
@@ -266,5 +268,24 @@ app.put('/editproduct/:id', verifyToken, async (req, res) => {
     }
 });
 
+app.post('/razorpay', async (req, res) => {
+    try {
+        var razorpay = new Razorpay({
+            key_id: 'rzp_test_VlWCPpJFwejFle',
+            key_secret: 'Lu0ahQ1ciDOmJqjbG5MMqymd',
+        });
+    
+        const options = req.body;
+        const order = await razorpay.orders.create(options);
+        
+        if(!order){
+            return res.status(500).json("Order not created")
+        }
+        return res.status(200).json(order);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json("Internal server error")
+    }
+});
 
 app.listen(3000, () => console.log('Server is running on port 3000'))
