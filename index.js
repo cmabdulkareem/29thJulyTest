@@ -7,6 +7,10 @@ import cookieParser from 'cookie-parser'
 import fileUpload from 'express-fileupload'
 import { fileURLToPath } from 'url';
 import path,{ dirname } from 'path';
+import {config} from 'dotenv'
+config()
+
+import Razorpay from 'razorpay'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -250,8 +254,10 @@ app.post('/addtocart/:productId', verifyToken, async(req, res)=>{
 
 
 
-
-
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+})
 
 
 
