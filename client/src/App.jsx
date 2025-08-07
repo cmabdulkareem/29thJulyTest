@@ -21,6 +21,7 @@ import Register from './pages/auth/Register'
 import ForgotPw from './pages/auth/ForgotPw'
 import EditProduct from './pages/admin/EditProduct'
 import EditProductPage from './pages/admin/EditProductPage'
+import Checkout from './pages/Checkout'
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path='cart' element={<UserRoutes><Cart /></UserRoutes>} />
         <Route path='myorder' element={<UserRoutes><MyOrder /></UserRoutes>} />
         <Route path='product/:id' element={<UserRoutes><ProductPage /></UserRoutes>} />
+        <Route path='checkout' element={<UserRoutes><Checkout /></UserRoutes>} />
       </Route>
 
       <Route path='/admin' element={<AdminLayout />}>

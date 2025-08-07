@@ -16,6 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express()
+const PORT = process.env.PORT
 
 app.use(cors({
     origin: 'http://localhost:5173',
@@ -259,7 +260,19 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET
 })
 
+app.post('/order',  async(req, res)=>{
+    const {options} = req.body
 
+    try {
+        const order = await razorpay.orders.create(options)
+        if(!order){
+            return res.status(500).send('Order cannot be created')
+        }
+        res.status(200).json(order)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+})
 
 // app.post('/addtocart/:id', verifyToken, async (req, res) => {
 //     const productId = req.params.id;
@@ -283,4 +296,4 @@ const razorpay = new Razorpay({
 
 
 
-app.listen(3000, () => console.log('Server is running on port 3000'))
+app.listen(PORT, () => console.log('Server is running on port 3000'))
